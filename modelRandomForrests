@@ -1,0 +1,60 @@
+import numpy as np
+import smtplib
+import os
+from email.mime.text import MIMEText
+from sklearn.ensemble import RandomForestClassifier
+xTrain = [[1, 3, 1],
+                   [2,1,2],
+                   [10, 3, 3],
+                   [3, 6, 4],
+                   [4, 4, 4],
+                   [10, 2 ,5],
+                   [1, 0, 10],
+                   [4, 0, 6],
+                   [3,5,2],
+                   [10, 3, 1],
+                   [10, 0, 3],
+                   [10, 6, 10],
+                   [2,3,2],
+                   [5,2,1],
+                   [6,6,6]
+                   ]
+yTrain = [1,0,1,1,1,1,0,0,1,1,0,1,1,1,1]
+clf = RandomForestClassifier(n_estimators=10)
+clf.fit(xTrain, yTrain)
+
+
+
+workWithData = {"УрФУ" : 1, "МГУ" : 2, "нет" : 10, "МИСИС" : 4, "ИТМО" : 5, "НИЯУ МИФИ" : 6, "ВШЭ" : 7}
+workWithData2 = {"C#" : 1, "C++" : 2, "Python" : 3, "Basic" : 4, "1C" : 5, "Не знаю" : 10}
+data = ["Иван", "agilev409@gmail.com", 6, "УрФУ", "C#"]
+employeeName = data[0]
+email = data[1]
+dataForPredicting = data[2:5]
+dataForPredicting[1] = workWithData[dataForPredicting[1]]
+dataForPredicting[2] = workWithData2[dataForPredicting[2]]
+
+def send_email(message):
+    sender = ""
+    password = ""
+    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server.starttls()
+    try:
+        server.login(sender, password)
+        msg = MIMEText(message)
+        msg["Subject"] = "результаты Заявки"
+        server.sendmail(sender, sender, msg.as_string())
+        return "The message sended"
+    except Exception as _ex:
+        return f"{_ex}"
+def main():
+    npArray = np.array(dataForPredicting).reshape(1, -1)
+    prediction = clf.predict(npArray)
+    message = ""
+    if (prediction== 0):
+        message = f"{employeeName}, мы вас поздравляем, вы прошли в следующий этап на очное собеседование, наши специалисты скоро с вами свяжутся"
+    elif (prediction == 1):
+        message = f"{employeeName}, извините, к сожалению вы нам не подходите, спасибо за проявленный интерес"
+    print(send_email(message))
+if __name__ == "__main__":
+    main()
